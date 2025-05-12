@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ping Pong Roster Tracker</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#2196f3" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="PingPong" />
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
+  </head>
+  <body>
+    <header>
+      <h1>Ping Pong Roster Tracker</h1>
+      <div class="room-selector-container">
+        <select id="room-selector" aria-label="Select Room">
+          <option value="">Select a Room</option>
+        </select>
+        <button id="create-room-btn" class="btn primary">Create Room</button>
+        <button id="manage-rooms-btn" class="btn secondary">
+          Manage Rooms
+        </button>
+      </div>
+      <div id="current-room-display" class="hidden">
+        <h2>Current Room: <span id="current-room-name"></span></h2>
+      </div>
+    </header>
+
+    <main>
+      <!-- Welcome Screen -->
+      <section id="welcome-screen">
+        <div class="welcome-content">
+          <h2>Welcome to Ping Pong Match Tracker</h2>
+          <p>
+            Create or select a room to get started tracking your ping pong
+            matches.
+          </p>
+          <div class="welcome-actions">
+            <button id="welcome-create-room" class="btn primary large">
+              Create a New Room
+            </button>
+            <p>or</p>
+            <button id="welcome-import-data" class="btn secondary large">
+              Import Existing Data
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Room Content -->
+      <section id="room-content" class="hidden">
+        <nav class="tabs">
+          <button class="tab-btn active" data-tab="players">Players</button>
+          <button class="tab-btn" data-tab="new-match">New Match</button>
+          <button class="tab-btn" data-tab="stats">Statistics</button>
+          <button class="tab-btn" data-tab="history">Match History</button>
+        </nav>
+
+        <div class="tab-content">
+          <!-- Players Tab -->
+          <div id="players-tab" class="tab-pane active">
+            <div class="section-header">
+              <h3>Players</h3>
+              <button id="add-player-btn" class="btn primary">
+                Add Player
+              </button>
+            </div>
+            <div class="players-list-container">
+              <table id="players-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Matches</th>
+                    <th>Wins</th>
+                    <th>Losses</th>
+                    <th>Win %</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="players-list">
+                  <!-- Players will be added here dynamically -->
+                </tbody>
+              </table>
+              <div id="no-players-message" class="empty-state">
+                <p>
+                  No players added yet. Add players to start tracking matches.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- New Match Tab -->
+          <div id="new-match-tab" class="tab-pane">
+            <div class="section-header">
+              <h3>Record New Match</h3>
+            </div>
+            <form id="new-match-form">
+              <div class="form-group">
+                <label for="player1">Player 1:</label>
+                <select id="player1" required>
+                  <option value="">Select Player 1</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="player1-score">Score:</label>
+                <input type="number" id="player1-score" min="0" required />
+              </div>
+              <div class="form-group">
+                <label for="player2">Player 2:</label>
+                <select id="player2" required>
+                  <option value="">Select Player 2</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="player2-score">Score:</label>
+                <input type="number" id="player2-score" min="0" required />
+              </div>
+              <div class="form-group">
+                <label for="match-notes">Notes (optional):</label>
+                <textarea id="match-notes"></textarea>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn primary">Save Match</button>
+                <button type="reset" class="btn secondary">Reset</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Statistics Tab -->
+          <div id="stats-tab" class="tab-pane">
+            <div class="section-header">
+              <h3>Statistics</h3>
+            </div>
+            <div class="stats-container">
+              <div class="leaderboard">
+                <h4>Leaderboard</h4>
+                <table id="leaderboard-table">
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Player</th>
+                      <th>Wins</th>
+                      <th>Win %</th>
+                      <th>Current Streak</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leaderboard-list">
+                    <!-- Leaderboard will be added here dynamically -->
+                  </tbody>
+                </table>
+              </div>
+              <div class="charts-container">
+                <div class="chart">
+                  <h4>Win Distribution</h4>
+                  <div id="win-distribution-chart" class="chart-canvas"></div>
+                </div>
+                <div class="chart">
+                  <h4>Match Activity</h4>
+                  <div id="match-activity-chart" class="chart-canvas"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Match History Tab -->
+          <div id="history-tab" class="tab-pane">
+            <div class="section-header">
+              <h3>Match History</h3>
+            </div>
+            <div class="history-filters">
+              <div class="form-group">
+                <label for="history-player-filter">Filter by Player:</label>
+                <select id="history-player-filter">
+                  <option value="">All Players</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="history-date-filter">Filter by Date:</label>
+                <select id="history-date-filter">
+                  <option value="all">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                </select>
+              </div>
+            </div>
+            <div class="match-history-container">
+              <table id="match-history-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Players</th>
+                    <th>Score</th>
+                    <th>Winner</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="match-history-list">
+                  <!-- Match history will be added here dynamically -->
+                </tbody>
+              </table>
+              <div id="no-matches-message" class="empty-state">
+                <p>No matches recorded yet.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modals -->
+    <div id="modal-overlay" class="hidden"></div>
+
+    <!-- Create Room Modal -->
+    <div id="create-room-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Create New Room</h3>
+          <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="create-room-form">
+            <div class="form-group">
+              <label for="room-name">Room Name:</label>
+              <input type="text" id="room-name" required />
+            </div>
+            <div class="form-group">
+              <label for="room-description">Description (optional):</label>
+              <textarea id="room-description"></textarea>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn primary">Create</button>
+              <button type="button" class="btn secondary cancel-modal">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Player Modal -->
+    <div id="add-player-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Add New Player</h3>
+          <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="add-player-form">
+            <div class="form-group">
+              <label for="player-name">Player Name:</label>
+              <input type="text" id="player-name" required />
+            </div>
+            <div class="form-group">
+              <label for="player-nickname">Nickname (optional):</label>
+              <input type="text" id="player-nickname" />
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn primary">Add Player</button>
+              <button type="button" class="btn secondary cancel-modal">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Player Modal -->
+    <div id="edit-player-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Edit Player</h3>
+          <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="edit-player-form">
+            <input type="hidden" id="edit-player-id" />
+            <div class="form-group">
+              <label for="edit-player-name">Player Name:</label>
+              <input type="text" id="edit-player-name" required />
+            </div>
+            <div class="form-group">
+              <label for="edit-player-nickname">Nickname (optional):</label>
+              <input type="text" id="edit-player-nickname" />
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn primary">Save Changes</button>
+              <button type="button" class="btn secondary cancel-modal">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manage Rooms Modal -->
+    <div id="manage-rooms-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Manage Rooms</h3>
+          <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="rooms-list-container">
+            <table id="rooms-table">
+              <thead>
+                <tr>
+                  <th>Room Name</th>
+                  <th>Players</th>
+                  <th>Matches</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="rooms-list">
+                <!-- Rooms will be added here dynamically -->
+              </tbody>
+            </table>
+          </div>
+          <div class="data-management">
+            <h4>Data Management</h4>
+            <div class="data-actions">
+              <button id="export-all-data" class="btn secondary">
+                Export All Data
+              </button>
+              <button id="import-data" class="btn secondary">
+                Import Data
+              </button>
+              <input
+                type="file"
+                id="import-file"
+                accept=".json"
+                class="hidden"
+              />
+            </div>
+            <div class="storage-info">
+              <p>
+                Storage usage: <span id="storage-usage">Calculating...</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="confirmation-title">Confirm Action</h3>
+          <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p id="confirmation-message">Are you sure you want to proceed?</p>
+          <div class="form-actions">
+            <button id="confirm-action" class="btn danger">Confirm</button>
+            <button class="btn secondary cancel-modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="hidden">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/db.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/stats.js"></script>
+    <script src="js/export-import.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
